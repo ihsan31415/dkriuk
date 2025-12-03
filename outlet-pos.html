@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>D'Kriuk POS - Kasir Outlet</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#eb6f0a", // Oranye D'Kriuk
+              "background-light": "#f8f7f5",
+              "background-dark": "#23170f",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+
+<body class="font-display bg-background-light text-gray-800 h-screen overflow-hidden flex flex-col lg:flex-row">
+
+    <main class="flex-1 h-full overflow-y-auto lg:pr-[384px] relative">
+        
+        <header class="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="bg-orange-100 p-2 rounded-lg text-primary">
+                    <span class="material-symbols-outlined">storefront</span>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold leading-tight">Outlet: UNNES Sekaran</h2>
+                    <p class="text-xs text-gray-500">Kasir: Staff Pagi</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    ONLINE
+                </div>
+                <a href="index.html" class="p-2 text-gray-400 hover:text-red-500 transition-colors" title="Logout">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="p-6 pb-24">
+            <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">fastfood</span>
+                Menu D'Kriuk
+            </h3>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                
+                <div onclick="addToCart(1, 'Ayam Dada', 10000, 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?q=80&w=300&auto=format&fit=crop')" 
+                     class="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md hover:border-primary transition-all active:scale-95">
+                    <div class="relative aspect-square">
+                        <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?q=80&w=300&auto=format&fit=crop" alt="Dada">
+                        <span id="stok-1" class="absolute top-2 right-2 bg-gray-900/80 text-white text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm">Sisa: 24</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-gray-800">Ayam Dada</h4>
+                        <p class="text-primary font-bold">Rp 10.000</p>
+                    </div>
+                </div>
+
+                <div onclick="addToCart(2, 'Paha Atas', 10000, 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?q=80&w=300&auto=format&fit=crop')" 
+                     class="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md hover:border-primary transition-all active:scale-95">
+                    <div class="relative aspect-square">
+                        <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?q=80&w=300&auto=format&fit=crop" alt="Paha Atas">
+                        <span id="stok-2" class="absolute top-2 right-2 bg-gray-900/80 text-white text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm">Sisa: 18</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-gray-800">Paha Atas</h4>
+                        <p class="text-primary font-bold">Rp 10.000</p>
+                    </div>
+                </div>
+
+                <div onclick="addToCart(3, 'Sayap', 8000, 'https://i.huffpost.com/gen/1350227/images/o-MIGHTY-WINGS-facebook.jpg')" 
+                     class="group bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden cursor-pointer hover:shadow-md hover:border-red-500 transition-all active:scale-95">
+                    <div class="relative aspect-square">
+                        <img class="w-full h-full object-cover" src="https://i.huffpost.com/gen/1350227/images/o-MIGHTY-WINGS-facebook.jpg" alt="Sayap">
+                        <span id="stok-3" class="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">Sisa: 5</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-gray-800">Sayap</h4>
+                        <p class="text-primary font-bold">Rp 8.000</p>
+                    </div>
+                </div>
+
+                <div onclick="addToCart(4, 'Paha Bawah', 8000, 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=300&auto=format&fit=crop')" 
+                     class="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md hover:border-primary transition-all active:scale-95">
+                    <div class="relative aspect-square">
+                        <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=300&auto=format&fit=crop" alt="Paha Bawah">
+                        <span id="stok-4" class="absolute top-2 right-2 bg-gray-900/80 text-white text-xs font-bold px-2 py-1 rounded-full backdrop-blur-sm">Sisa: 12</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-gray-800">Paha Bawah</h4>
+                        <p class="text-primary font-bold">Rp 8.000</p>
+                    </div>
+                </div>
+
+                <div onclick="addToCart(5, 'Nasi Putih', 4000, 'https://images.unsplash.com/photo-1516684732162-798a0062be99?q=80&w=300&auto=format&fit=crop')" 
+                     class="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md hover:border-primary transition-all active:scale-95">
+                    <div class="relative aspect-square">
+                        <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1516684732162-798a0062be99?q=80&w=300&auto=format&fit=crop" alt="Nasi">
+                        <span class="absolute top-2 right-2 bg-gray-900/80 text-white text-xs font-bold px-2 py-1 rounded-full">Sisa: 50</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-gray-800">Nasi Putih</h4>
+                        <p class="text-primary font-bold">Rp 4.000</p>
+                    </div>
+                </div>
+
+                <div onclick="addToCart(6, 'Es Teh', 3000, 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=300&auto=format&fit=crop')" 
+                     class="group bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden cursor-pointer hover:shadow-md hover:border-primary transition-all active:scale-95">
+                    <div class="relative aspect-square">
+                        <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=300&auto=format&fit=crop" alt="Es Teh">
+                        <span class="absolute top-2 right-2 bg-gray-900/80 text-white text-xs font-bold px-2 py-1 rounded-full">Sisa: 100</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="font-bold text-gray-800">Es Teh</h4>
+                        <p class="text-primary font-bold">Rp 3.000</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <aside class="fixed inset-y-0 right-0 z-20 w-full lg:w-96 bg-white border-l border-gray-200 shadow-2xl flex flex-col transform transition-transform duration-300 translate-x-full lg:translate-x-0" id="cartSidebar">
+        
+        <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <span class="material-symbols-outlined">shopping_cart</span>
+                Pesanan Baru
+            </h2>
+            <span id="cartCount" class="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">0 Item</span>
+        </div>
+
+        <div id="cartItemsContainer" class="flex-1 overflow-y-auto p-4 space-y-3">
+            </div>
+
+        <div class="p-5 border-t border-gray-200 bg-gray-50 space-y-4">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span id="subtotalDisplay" class="font-medium">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-gray-600">
+                    <span>Pajak (0%)</span>
+                    <span class="font-medium">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
+                    <span>Total</span>
+                    <span id="totalDisplay" class="text-primary">Rp 0</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <a href="outlet-request.html" class="flex items-center justify-center gap-2 px-4 py-3 border border-orange-200 text-primary font-bold rounded-xl hover:bg-orange-50 transition-colors">
+                    <span class="material-symbols-outlined text-sm">inventory</span>
+                    Stok
+                </a>
+                <button onclick="processCheckout()" class="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 shadow-lg shadow-green-200 transition-all active:scale-95">
+                    Bayar
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        // State Keranjang
+        let cart = [];
+
+        // Template HTML untuk Empty State (Disimpan sebagai string)
+        const emptyStateHTML = `
+            <div id="emptyState" class="flex flex-col items-center justify-center h-full text-gray-400">
+                <span class="material-symbols-outlined text-6xl mb-2 opacity-20">point_of_sale</span>
+                <p>Belum ada pesanan</p>
+                <p class="text-xs">Klik menu di kiri untuk menambah</p>
+            </div>
+        `;
+
+        // Render awal (Tampilkan kosong)
+        document.getElementById('cartItemsContainer').innerHTML = emptyStateHTML;
+
+        // Fungsi Format Rupiah
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        }
+
+        // 1. Tambah ke Keranjang
+        function addToCart(id, name, price, image) {
+            // Cek apakah item sudah ada
+            const existingItem = cart.find(item => item.id === id);
+
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cart.push({ id, name, price, image, qty: 1 });
+            }
+
+            // Kurangi tampilan stok di kartu produk (Simulasi Visual)
+            const stokBadge = document.getElementById(`stok-${id}`);
+            if(stokBadge) {
+                let currentStock = parseInt(stokBadge.innerText.replace('Sisa: ', ''));
+                if(currentStock > 0) {
+                    stokBadge.innerText = `Sisa: ${currentStock - 1}`;
+                }
+            }
+
+            renderCart();
+        }
+
+        // 2. Render Tampilan Keranjang (LOGIKA DIPERBAIKI)
+        function renderCart() {
+            const container = document.getElementById('cartItemsContainer');
+            const cartCount = document.getElementById('cartCount');
+            const subtotalDisplay = document.getElementById('subtotalDisplay');
+            const totalDisplay = document.getElementById('totalDisplay');
+
+            // Hitung Total
+            let total = 0;
+            let totalQty = 0;
+
+            // Jika keranjang kosong, tampilkan Empty State
+            if (cart.length === 0) {
+                container.innerHTML = emptyStateHTML; // Gunakan string template
+                cartCount.innerText = '0 Item';
+                subtotalDisplay.innerText = 'Rp 0';
+                totalDisplay.innerText = 'Rp 0';
+                return;
+            }
+
+            // Jika ada isinya, render item
+            container.innerHTML = ''; // Bersihkan container
+
+            cart.forEach((item, index) => {
+                total += item.price * item.qty;
+                totalQty += item.qty;
+
+                const itemHTML = `
+                <div class="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-100 shadow-sm animate-[fadeIn_0.2s_ease-out]">
+                    <img src="${item.image}" class="w-12 h-12 rounded-md object-cover">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-gray-800 truncate">${item.name}</p>
+                        <p class="text-xs text-gray-500">${formatRupiah(item.price)}</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
+                        <button onclick="updateQty(${index}, -1)" class="w-6 h-6 flex items-center justify-center bg-white rounded border border-gray-200 text-gray-600 hover:bg-gray-100">-</button>
+                        <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
+                        <button onclick="updateQty(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-white rounded border border-gray-200 text-green-600 hover:bg-green-50">+</button>
+                    </div>
+                </div>
+                `;
+                container.insertAdjacentHTML('beforeend', itemHTML);
+            });
+
+            // Update Text UI
+            cartCount.innerText = `${totalQty} Item`;
+            subtotalDisplay.innerText = formatRupiah(total);
+            totalDisplay.innerText = formatRupiah(total);
+        }
+
+        // 3. Update Jumlah Item (+/-)
+        function updateQty(index, change) {
+            if (cart[index].qty + change <= 0) {
+                // Hapus item jika qty jadi 0
+                cart.splice(index, 1);
+            } else {
+                cart[index].qty += change;
+            }
+            renderCart();
+        }
+
+        // 4. Proses Pembayaran
+        function processCheckout() {
+            if (cart.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Keranjang Kosong',
+                    text: 'Silakan pilih menu terlebih dahulu.',
+                    confirmButtonColor: '#eb6f0a'
+                });
+                return;
+            }
+
+            // Hitung total akhir
+            let finalTotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+            Swal.fire({
+                title: 'Konfirmasi Pembayaran',
+                html: `Total tagihan: <b>${formatRupiah(finalTotal)}</b><br>Lanjutkan proses bayar?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Bayar Tunai'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Pembayaran Berhasil!',
+                        text: 'Struk telah dicetak. Terima kasih.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Reset Keranjang
+                    cart = [];
+                    renderCart();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
