@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>D'Kriuk - Laporan & Analitik</title>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#eb6f0a", 
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              "gray-900": "#111827",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+
+<body class="font-display bg-background-light text-gray-800">
+
+<div class="flex h-screen overflow-hidden">
+    
+    <aside class="fixed top-0 left-0 z-40 w-64 h-screen bg-gray-900 text-white flex flex-col transition-transform translate-x-0">
+        <div class="flex flex-col gap-4 p-6 border-b border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-2 rounded-lg">
+                    <span class="material-symbols-outlined text-primary">fastfood</span>
+                </div>
+                <div class="flex flex-col">
+                    <h1 class="text-white text-lg font-bold leading-tight">D'Kriuk System</h1>
+                    <p class="text-gray-400 text-xs">Hub Management</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-2 p-4 flex-1">
+            <a class="flex items-center gap-3 px-3 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition-colors" href="admin-dashboard.html">
+                <span class="material-symbols-outlined">dashboard</span>
+                <p class="text-sm font-medium">Dashboard</p>
+            </a>
+            
+            <a class="flex items-center gap-3 px-3 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition-colors" href="admin-distribusi.html">
+                <span class="material-symbols-outlined">local_shipping</span>
+                <p class="text-sm font-medium">Distribusi Stok</p>
+            </a>
+            
+            <a class="flex items-center gap-3 px-3 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition-colors" href="admin-outlet.html">
+                <span class="material-symbols-outlined">storefront</span>
+                <p class="text-sm font-medium">Manajemen Outlet</p>
+            </a>
+            
+            <a class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-white shadow-lg shadow-primary/20" href="admin-laporan.html">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <p class="text-sm font-medium">Laporan & Analitik</p>
+            </a>
+        </div>
+
+        <div class="p-4 border-t border-gray-800">
+            <a href="index.html" class="flex items-center gap-3 px-3 py-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                <span class="material-symbols-outlined">logout</span>
+                <p class="text-sm font-medium">Logout</p>
+            </a>
+        </div>
+    </aside>
+
+    <div class="ml-64 flex-1 flex flex-col h-screen overflow-y-auto">
+        
+        <header class="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-200 sticky top-0 z-30">
+            <h2 class="text-xl font-bold text-gray-800">Laporan Penjualan</h2>
+            <div class="flex items-center gap-4">
+                <button class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 bg-white">
+                    <span class="material-symbols-outlined text-lg">download</span>
+                    Export Excel
+                </button>
+                <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-primary">
+                    <img src="https://ui-avatars.com/api/?name=Rifqy+Tsaqif&background=eb6f0a&color=fff" alt="Admin">
+                </div>
+            </div>
+        </header>
+
+        <main class="p-8 bg-background-light">
+            
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Rentang Waktu</label>
+                    <select class="w-full border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+                        <option>7 Hari Terakhir</option>
+                        <option>Bulan Ini (Desember)</option>
+                        <option>Bulan Lalu (November)</option>
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Filter Outlet</label>
+                    <select class="w-full border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+                        <option value="all">Semua Outlet</option>
+                        <option value="sekaran">Cabang UNNES Sekaran</option>
+                        <option value="banaran">Cabang Banaran</option>
+                        <option value="sampangan">Cabang Sampangan</option>
+                    </select>
+                </div>
+                <button class="px-6 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-primary transition-colors h-[38px]">
+                    Terapkan Filter
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-green-100 text-green-600 rounded-lg">
+                            <span class="material-symbols-outlined">payments</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Omzet (7 Hari)</p>
+                            <h3 class="text-2xl font-bold text-gray-900">Rp 45.200.000</h3>
+                            <span class="text-xs text-green-600 font-bold">▲ 8.2% vs minggu lalu</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-orange-100 text-primary rounded-lg">
+                            <span class="material-symbols-outlined">receipt_long</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Transaksi</p>
+                            <h3 class="text-2xl font-bold text-gray-900">1,845</h3>
+                            <span class="text-xs text-green-600 font-bold">▲ 120 Transaksi baru</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-blue-100 text-blue-600 rounded-lg">
+                            <span class="material-symbols-outlined">store</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Top Performa Outlet</p>
+                            <h3 class="text-lg font-bold text-gray-900">Cabang UNNES Sekaran</h3>
+                            <span class="text-xs text-gray-500">Kontribusi 42% dari total omzet</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Tren Pendapatan Harian</h3>
+                    <div class="h-64">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Produk Terlaris</h3>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="productChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900">Rincian Penjualan per Outlet (Harian)</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3">Tanggal</th>
+                                <th class="px-6 py-3">Nama Outlet</th>
+                                <th class="px-6 py-3 text-right">Jml Transaksi</th>
+                                <th class="px-6 py-3 text-right">Item Terjual (Pcs)</th>
+                                <th class="px-6 py-3 text-right">Total Omzet</th>
+                                <th class="px-6 py-3 text-center">Status Laporan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">03 Des 2023</td>
+                                <td class="px-6 py-4">Cabang UNNES Sekaran</td>
+                                <td class="px-6 py-4 text-right">142</td>
+                                <td class="px-6 py-4 text-right">320</td>
+                                <td class="px-6 py-4 text-right font-bold text-gray-900">Rp 3.200.000</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">Final</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">03 Des 2023</td>
+                                <td class="px-6 py-4">Cabang Banaran</td>
+                                <td class="px-6 py-4 text-right">98</td>
+                                <td class="px-6 py-4 text-right">210</td>
+                                <td class="px-6 py-4 text-right font-bold text-gray-900">Rp 2.150.000</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">Final</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">03 Des 2023</td>
+                                <td class="px-6 py-4">Cabang Sampangan</td>
+                                <td class="px-6 py-4 text-right">85</td>
+                                <td class="px-6 py-4 text-right">180</td>
+                                <td class="px-6 py-4 text-right font-bold text-gray-900">Rp 1.950.000</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-1 rounded-full">Open</span>
+                                </td>
+                            </tr>
+                             <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 font-medium text-gray-900">02 Des 2023</td>
+                                <td class="px-6 py-4">Cabang UNNES Sekaran</td>
+                                <td class="px-6 py-4 text-right">150</td>
+                                <td class="px-6 py-4 text-right">340</td>
+                                <td class="px-6 py-4 text-right font-bold text-gray-900">Rp 3.450.000</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-1 rounded-full">Final</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script>
+    // 1. Chart Revenue (Bar Chart)
+    const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctxRevenue, {
+        type: 'bar',
+        data: {
+            labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
+            datasets: [
+                {
+                    label: 'Sekaran',
+                    data: [2500000, 2800000, 2600000, 3000000, 3500000, 4200000, 3800000],
+                    backgroundColor: '#eb6f0a',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Banaran',
+                    data: [1800000, 1900000, 1850000, 2100000, 2400000, 2800000, 2600000],
+                    backgroundColor: '#fcd34d',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f3f4f6' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // 2. Chart Produk (Doughnut Chart)
+    const ctxProduct = document.getElementById('productChart').getContext('2d');
+    new Chart(ctxProduct, {
+        type: 'doughnut',
+        data: {
+            labels: ['Dada', 'Paha Atas', 'Paha Bawah', 'Sayap', 'Nasi'],
+            datasets: [{
+                data: [35, 25, 20, 15, 45], // Persentase/Jumlah
+                backgroundColor: [
+                    '#eb6f0a', // Primary
+                    '#f97316', 
+                    '#fb923c',
+                    '#fdba74',
+                    '#9ca3af'  // Nasi (Abu)
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

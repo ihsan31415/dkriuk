@@ -30,10 +30,11 @@
     </script>
     <style>
       .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      /* Custom Scrollbar untuk Modal */
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 
@@ -53,10 +54,13 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    ONLINE
-                </div>
+                <a href="outlet-dapur.html" class="p-2 text-gray-400 hover:text-primary transition-colors" title="Ke Dapur">
+                    <span class="material-symbols-outlined">skillet</span>
+                </a>
+                <a href="outlet-inventory.html" class="p-2 text-gray-400 hover:text-primary transition-colors" title="Cek Barang Masuk">
+                    <span class="material-symbols-outlined">inventory</span>
+                </a>
+                <div class="h-6 w-px bg-gray-300 mx-1"></div>
                 <a href="index.html" class="p-2 text-gray-400 hover:text-red-500 transition-colors" title="Logout">
                     <span class="material-symbols-outlined">logout</span>
                 </a>
@@ -152,7 +156,7 @@
         <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <span class="material-symbols-outlined">shopping_cart</span>
-                Pesanan Baru
+                Pesanan
             </h2>
             <span id="cartCount" class="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">0 Item</span>
         </div>
@@ -177,10 +181,11 @@
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <a href="outlet-request.html" class="flex items-center justify-center gap-2 px-4 py-3 border border-orange-200 text-primary font-bold rounded-xl hover:bg-orange-50 transition-colors">
-                    <span class="material-symbols-outlined text-sm">inventory</span>
-                    Stok
-                </a>
+                <button onclick="requestStokModal()" class="flex items-center justify-center gap-2 px-4 py-3 border border-orange-200 text-primary font-bold rounded-xl hover:bg-orange-50 transition-colors">
+                    <span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+                    Req Stok
+                </button>
+                
                 <button onclick="processCheckout()" class="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 shadow-lg shadow-green-200 transition-all active:scale-95">
                     Bayar
                     <span class="material-symbols-outlined text-sm">arrow_forward</span>
@@ -193,7 +198,6 @@
         // State Keranjang
         let cart = [];
 
-        // Template HTML untuk Empty State (Disimpan sebagai string)
         const emptyStateHTML = `
             <div id="emptyState" class="flex flex-col items-center justify-center h-full text-gray-400">
                 <span class="material-symbols-outlined text-6xl mb-2 opacity-20">point_of_sale</span>
@@ -201,65 +205,50 @@
                 <p class="text-xs">Klik menu di kiri untuk menambah</p>
             </div>
         `;
-
-        // Render awal (Tampilkan kosong)
         document.getElementById('cartItemsContainer').innerHTML = emptyStateHTML;
 
-        // Fungsi Format Rupiah
         const formatRupiah = (number) => {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
         }
 
-        // 1. Tambah ke Keranjang
+        // --- Logic Keranjang (Standard) ---
         function addToCart(id, name, price, image) {
-            // Cek apakah item sudah ada
             const existingItem = cart.find(item => item.id === id);
-
             if (existingItem) {
                 existingItem.qty++;
             } else {
                 cart.push({ id, name, price, image, qty: 1 });
             }
-
-            // Kurangi tampilan stok di kartu produk (Simulasi Visual)
+            // Simulasi Update Stok UI
             const stokBadge = document.getElementById(`stok-${id}`);
             if(stokBadge) {
                 let currentStock = parseInt(stokBadge.innerText.replace('Sisa: ', ''));
-                if(currentStock > 0) {
-                    stokBadge.innerText = `Sisa: ${currentStock - 1}`;
-                }
+                if(currentStock > 0) stokBadge.innerText = `Sisa: ${currentStock - 1}`;
             }
-
             renderCart();
         }
 
-        // 2. Render Tampilan Keranjang (LOGIKA DIPERBAIKI)
         function renderCart() {
             const container = document.getElementById('cartItemsContainer');
             const cartCount = document.getElementById('cartCount');
             const subtotalDisplay = document.getElementById('subtotalDisplay');
             const totalDisplay = document.getElementById('totalDisplay');
 
-            // Hitung Total
             let total = 0;
             let totalQty = 0;
 
-            // Jika keranjang kosong, tampilkan Empty State
             if (cart.length === 0) {
-                container.innerHTML = emptyStateHTML; // Gunakan string template
+                container.innerHTML = emptyStateHTML;
                 cartCount.innerText = '0 Item';
                 subtotalDisplay.innerText = 'Rp 0';
                 totalDisplay.innerText = 'Rp 0';
                 return;
             }
 
-            // Jika ada isinya, render item
-            container.innerHTML = ''; // Bersihkan container
-
+            container.innerHTML = ''; 
             cart.forEach((item, index) => {
                 total += item.price * item.qty;
                 totalQty += item.qty;
-
                 const itemHTML = `
                 <div class="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-100 shadow-sm animate-[fadeIn_0.2s_ease-out]">
                     <img src="${item.image}" class="w-12 h-12 rounded-md object-cover">
@@ -272,21 +261,16 @@
                         <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
                         <button onclick="updateQty(${index}, 1)" class="w-6 h-6 flex items-center justify-center bg-white rounded border border-gray-200 text-green-600 hover:bg-green-50">+</button>
                     </div>
-                </div>
-                `;
+                </div>`;
                 container.insertAdjacentHTML('beforeend', itemHTML);
             });
-
-            // Update Text UI
             cartCount.innerText = `${totalQty} Item`;
             subtotalDisplay.innerText = formatRupiah(total);
             totalDisplay.innerText = formatRupiah(total);
         }
 
-        // 3. Update Jumlah Item (+/-)
         function updateQty(index, change) {
             if (cart[index].qty + change <= 0) {
-                // Hapus item jika qty jadi 0
                 cart.splice(index, 1);
             } else {
                 cart[index].qty += change;
@@ -294,21 +278,12 @@
             renderCart();
         }
 
-        // 4. Proses Pembayaran
         function processCheckout() {
             if (cart.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Keranjang Kosong',
-                    text: 'Silakan pilih menu terlebih dahulu.',
-                    confirmButtonColor: '#eb6f0a'
-                });
+                Swal.fire({ icon: 'warning', title: 'Keranjang Kosong', text: 'Silakan pilih menu terlebih dahulu.', confirmButtonColor: '#eb6f0a' });
                 return;
             }
-
-            // Hitung total akhir
             let finalTotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-
             Swal.fire({
                 title: 'Konfirmasi Pembayaran',
                 html: `Total tagihan: <b>${formatRupiah(finalTotal)}</b><br>Lanjutkan proses bayar?`,
@@ -319,17 +294,98 @@
                 confirmButtonText: 'Ya, Bayar Tunai'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Pembayaran Berhasil!',
-                        text: 'Struk telah dicetak. Terima kasih.',
-                        icon: 'success',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    
-                    // Reset Keranjang
+                    Swal.fire({ title: 'Pembayaran Berhasil!', text: 'Struk telah dicetak. Terima kasih.', icon: 'success', timer: 2000, showConfirmButton: false });
                     cart = [];
                     renderCart();
+                }
+            });
+        }
+
+        // --- FITUR BARU: MULTI-REQUEST MODAL ---
+        function requestStokModal() {
+            // Daftar Item yang bisa direquest
+            const items = [
+                'Ayam Dada', 'Paha Atas', 'Paha Bawah', 'Sayap', 
+                'Nasi Putih', 'Es Teh'
+            ];
+
+            // Generate HTML untuk setiap baris item
+            let itemsHtml = items.map(item => `
+                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
+                    <span class="text-sm font-medium text-gray-700">${item}</span>
+                    <div class="flex items-center gap-2">
+                        <input type="number" data-name="${item}" class="req-input w-24 p-2 text-sm border border-gray-300 rounded-lg text-right focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="0" min="0">
+                        <span class="text-xs text-gray-400 w-6">pcs</span>
+                    </div>
+                </div>
+            `).join('');
+
+            Swal.fire({
+                title: 'Request Stok',
+                width: '600px',
+                html: `
+                    <div class="text-left">
+                        <div class="p-3 mb-4 bg-orange-50 rounded-lg border border-orange-100 text-sm text-orange-800 flex items-start gap-2">
+                            <span class="material-symbols-outlined text-lg mt-0.5">info</span>
+                            <p class="leading-tight">Isi jumlah hanya pada item yang dibutuhkan. Kosongkan jika tidak perlu.</p>
+                        </div>
+                        
+                        <div class="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar border border-gray-100 rounded-lg p-2 bg-gray-50/50">
+                            ${itemsHtml}
+                        </div>
+
+                        <label class="block mt-4">
+                            <span class="text-xs font-bold text-gray-500 uppercase">Catatan Tambahan</span>
+                            <textarea id="reqNote" class="w-full mt-1 p-2 border border-gray-300 rounded-lg shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none text-sm" rows="2" placeholder="Cth: Stok menipis, butuh dikirim sebelum jam makan siang"></textarea>
+                        </label>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#eb6f0a',
+                confirmButtonText: 'Kirim Request',
+                cancelButtonText: 'Batal',
+                focusConfirm: false,
+                preConfirm: () => {
+                    // Ambil semua input
+                    const inputs = document.querySelectorAll('.req-input');
+                    const requests = [];
+                    
+                    inputs.forEach(input => {
+                        const val = parseInt(input.value);
+                        if (val > 0) {
+                            const name = input.getAttribute('data-name');
+                            requests.push({ item: name, qty: val });
+                        }
+                    });
+
+                    if (requests.length === 0) {
+                        Swal.showValidationMessage('Mohon isi minimal satu item!');
+                        return false;
+                    }
+                    const note = document.getElementById('reqNote').value;
+                    return { requests, note };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const data = result.value;
+                    
+                    // Format pesan sukses (List item)
+                    const listStr = data.requests.map(r => `<li><b>${r.qty}</b> ${r.item}</li>`).join('');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Request Terkirim!',
+                        html: `
+                            <p class="mb-2 text-sm text-gray-600">Permintaan berikut telah dikirim ke Hub Pusat:</p>
+                            <ul class="text-left text-sm bg-gray-50 p-3 rounded-lg border border-gray-200 list-disc list-inside mb-2">
+                                ${listStr}
+                            </ul>
+                            ${data.note ? `<p class="text-xs text-gray-500 italic">"Catatan: ${data.note}"</p>` : ''}
+                        `,
+                        timer: 4000,
+                        showConfirmButton: true,
+                        confirmButtonColor: '#16a34a' // Green for OK
+                    });
                 }
             });
         }
