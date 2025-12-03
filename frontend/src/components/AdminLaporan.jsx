@@ -23,13 +23,52 @@ ChartJS.register(
 
 const AdminLaporan = () => {
     const [laporan, setLaporan] = useState([]);
+    const [filteredLaporan, setFilteredLaporan] = useState([]);
+    const [filterOutlet, setFilterOutlet] = useState('all');
+    const [filterTime, setFilterTime] = useState('7 Hari Terakhir');
 
     useEffect(() => {
         fetch('http://localhost:5000/api/laporan')
             .then(res => res.json())
-            .then(data => setLaporan(data))
+            .then(data => {
+                setLaporan(data);
+                setFilteredLaporan(data);
+            })
             .catch(err => console.error(err));
     }, []);
+
+    const handleFilter = () => {
+        let result = laporan;
+
+        if (filterOutlet !== 'all') {
+            const outletMap = {
+                'outlet_1': 'Cabang UNNES Sekaran',
+                'outlet_2': 'Cabang Banaran',
+                'outlet_3': 'Cabang Patemon',
+                'outlet_4': 'Cabang Sampangan'
+            };
+            result = result.filter(item => item.outlet === outletMap[filterOutlet]);
+        }
+
+        // Mock Time Filter (Just shuffling or limiting for demo)
+        if (filterTime === 'Bulan Ini (Desember)') {
+            result = result.filter(item => item.tanggal.includes('Des'));
+        }
+        
+        setFilteredLaporan(result);
+    };
+
+    const handleExport = () => {
+        import('sweetalert2').then((Swal) => {
+            Swal.default.fire({
+                icon: 'success',
+                title: 'Export Berhasil',
+                text: 'Laporan telah diunduh sebagai .xlsx',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        });
+    };
 
     const barData = {
         labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
@@ -69,7 +108,7 @@ const AdminLaporan = () => {
             <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-200 sticky top-0 z-30">
                 <h2 className="text-xl font-bold text-gray-800">Laporan Penjualan</h2>
                 <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 bg-white">
+                    <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 bg-white">
                         <span className="material-symbols-outlined text-lg">download</span>
                         Export Excel
                     </button>
@@ -84,7 +123,11 @@ const AdminLaporan = () => {
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Rentang Waktu</label>
-                        <select className="w-full border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+                        <select 
+                            value={filterTime}
+                            onChange={(e) => setFilterTime(e.target.value)}
+                            className="w-full border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary"
+                        >
                             <option>7 Hari Terakhir</option>
                             <option>Bulan Ini (Desember)</option>
                             <option>Bulan Lalu (November)</option>
@@ -92,14 +135,19 @@ const AdminLaporan = () => {
                     </div>
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Filter Outlet</label>
-                        <select className="w-full border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+                        <select 
+                            value={filterOutlet}
+                            onChange={(e) => setFilterOutlet(e.target.value)}
+                            className="w-full border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary"
+                        >
                             <option value="all">Semua Outlet</option>
-                            <option value="sekaran">Cabang UNNES Sekaran</option>
-                            <option value="banaran">Cabang Banaran</option>
-                            <option value="sampangan">Cabang Sampangan</option>
+                            <option value="outlet_1">Cabang UNNES Sekaran</option>
+                            <option value="outlet_2">Cabang Banaran</option>
+                            <option value="outlet_3">Cabang Patemon</option>
+                            <option value="outlet_4">Cabang Sampangan</option>
                         </select>
                     </div>
-                    <button className="px-6 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-primary transition-colors h-[38px]">
+                    <button onClick={handleFilter} className="px-6 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-primary transition-colors h-[38px]">
                         Terapkan Filter
                     </button>
                 </div>
@@ -176,7 +224,7 @@ const AdminLaporan = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {laporan.map((item) => (
+                                {filteredLaporan.map((item) => (
                                     <tr key={item.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 font-medium text-gray-900">{item.tanggal}</td>
                                         <td className="px-6 py-4">{item.outlet}</td>

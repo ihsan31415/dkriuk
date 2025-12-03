@@ -10,6 +10,14 @@ const AdminDistribusi = () => {
         dada: 0,
         sayap: 0
     });
+    const [history, setHistory] = useState([]);
+
+    React.useEffect(() => {
+        fetch('http://localhost:5000/api/distribusi')
+            .then(res => res.json())
+            .then(data => setHistory(data))
+            .catch(err => console.error(err));
+    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -49,11 +57,22 @@ const AdminDistribusi = () => {
                 Swal.showLoading()
             }
         }).then(() => {
+            // Map UI items to Backend IDs
+            // 1: Dada, 2: Paha Atas, 3: Sayap
+            const itemsPayload = [];
+            if (items.dada > 0) itemsPayload.push({ id: 1, qty: items.dada });
+            if (items.paha_atas > 0) itemsPayload.push({ id: 2, qty: items.paha_atas });
+            if (items.sayap > 0) itemsPayload.push({ id: 3, qty: items.sayap });
+
             // Send data to backend
             fetch('http://localhost:5000/api/distribusi', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ outlet, items, total: totalItems, date: new Date().toISOString() })
+                body: JSON.stringify({ 
+                    outlet_id: outlet, 
+                    items: itemsPayload, 
+                    date: new Date().toISOString() 
+                })
             })
             .then(res => res.json())
             .then(() => {
@@ -68,6 +87,10 @@ const AdminDistribusi = () => {
                         navigate('/');
                     }
                 });
+                // Refresh history
+                fetch('http://localhost:5000/api/distribusi')
+                    .then(res => res.json())
+                    .then(data => setHistory(data));
             });
         });
     };
@@ -110,9 +133,10 @@ const AdminDistribusi = () => {
                                     className="form-select w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary h-12"
                                 >
                                     <option disabled value="">-- Pilih Outlet --</option>
-                                    <option value="sekaran">Cabang UNNES Sekaran (Kritis)</option>
-                                    <option value="banaran">Cabang Banaran</option>
-                                    <option value="sampangan">Cabang Sampangan</option>
+                                    <option value="outlet_1">Cabang UNNES Sekaran (Kritis)</option>
+                                    <option value="outlet_2">Cabang Banaran</option>
+                                    <option value="outlet_3">Cabang Patemon</option>
+                                    <option value="outlet_4">Cabang Sampangan</option>
                                 </select>
                             </label>
                         </div>
@@ -184,6 +208,47 @@ const AdminDistribusi = () => {
                             <span className="material-symbols-outlined">send</span>
                             Konfirmasi & Kirim Stok
                         </button>
+                    </div>
+                </div>
+
+                <div className="col-span-full">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h3 className="text-gray-900 text-lg font-bold flex items-center gap-2">
+                                <span className="material-symbols-outlined text-gray-500">history</span>
+                                Riwayat Pengiriman Terakhir
+                            </h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left text-gray-500">
+                                <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th className="px-6 py-3">Waktu</th>
+                                        <th className="px-6 py-3">Outlet Tujuan</th>
+                                        <th className="px-6 py-3 text-right">Jumlah Item</th>
+                                        <th className="px-6 py-3 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {history.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="4" className="px-6 py-8 text-center text-gray-400">Belum ada riwayat pengiriman.</td>
+                                        </tr>
+                                    ) : (
+                                        history.map((log, idx) => (
+                                            <tr key={idx} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4">{new Date(log.date).toLocaleString()}</td>
+                                                <td className="px-6 py-4 font-medium text-gray-900">{log.outlet}</td>
+                                                <td className="px-6 py-4 text-right font-bold">{log.items_count}</td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Sukses</span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
