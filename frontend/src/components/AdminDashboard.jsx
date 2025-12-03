@@ -5,6 +5,7 @@ const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
     const [inventory, setInventory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [requestsCount, setRequestsCount] = useState(0);
 
     const fetchData = () => {
         setLoading(true);
@@ -13,6 +14,7 @@ const AdminDashboard = () => {
             .then(data => {
                 setStats(data.stats);
                 setInventory(data.inventory);
+                setRequestsCount(data.requests_count || 0);
                 setLoading(false);
             })
             .catch(error => {
@@ -80,7 +82,11 @@ const AdminDashboard = () => {
                 <div className="flex items-center gap-6">
                     <button className="relative p-2 text-gray-400 hover:text-primary transition-colors">
                         <span className="material-symbols-outlined">notifications</span>
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        {requestsCount > 0 && (
+                            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold">
+                                {requestsCount}
+                            </span>
+                        )}
                     </button>
                     
                     <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
@@ -170,7 +176,10 @@ const AdminDashboard = () => {
                                         <th className="px-6 py-4 font-medium text-gray-900">
                                             <div className="flex flex-col">
                                                 <span>{item.outlet}</span>
-                                                <span className={`text-xs font-normal ${item.status === 'CRITICAL' ? 'text-red-500' : 'text-gray-500'}`}>Last update: {item.last_update}</span>
+                                                <span className={`text-xs font-normal flex items-center gap-1 ${item.status === 'CRITICAL' ? 'text-red-500' : 'text-gray-500'}`}>
+                                                    <span className="material-symbols-outlined text-[10px]">schedule</span>
+                                                    Updated: {item.last_update}
+                                                </span>
                                             </div>
                                         </th>
                                         <td className={`px-6 py-4 text-right ${item.paha_atas < 10 ? 'font-bold text-red-600' : ''}`}>{item.paha_atas}</td>

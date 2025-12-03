@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
@@ -31,11 +31,22 @@ inventory = {
     "outlet_4": {1: 5, 2: 2, 3: 0, 4: 4, 5: 10, 6: 15}
 }
 
+# Last Update Timestamps
+last_updates = {
+    "outlet_1": datetime.now() - timedelta(minutes=5),
+    "outlet_2": datetime.now() - timedelta(minutes=15),
+    "outlet_3": datetime.now() - timedelta(minutes=30),
+    "outlet_4": datetime.now() - timedelta(minutes=2)
+}
+
 # Transactions Log
 transactions = []
 
 # Distribution Log
 distributions = []
+
+# Requests Log
+requests_log = []
 
 # --- Helper Functions ---
 
@@ -44,6 +55,18 @@ def get_outlet_name(outlet_id):
         if o['id'] == outlet_id:
             return o['name']
     return "Unknown Outlet"
+
+def get_time_ago(dt):
+    now = datetime.now()
+    diff = now - dt
+    minutes = int(diff.total_seconds() / 60)
+    if minutes < 1:
+        return "Just now"
+    elif minutes < 60:
+        return f"{minutes} min ago"
+    else:
+        hours = int(minutes / 60)
+        return f"{hours} hours ago"
 
 def calculate_dashboard_stats():
     total_pendapatan = sum(t['total'] for t in transactions)
@@ -81,18 +104,24 @@ def calculate_dashboard_stats():
             "dada": stock_data.get(1, 0), # ID 1 is Dada
             "sayap": stock_data.get(3, 0), # ID 3 is Sayap
             "status": status,
-            "last_update": "Just now"
+            "last_update": get_time_ago(last_updates.get(oid, datetime.now()))
         })
 
+    # Dynamic Waste Calculation (Mock)
+    # Assume waste increases slightly with time or transactions
+    base_waste = 5.2
+    dynamic_waste = base_waste + (len(transactions) * 0.1)
+    
     return {
         "stats": {
             "total_outlet": len(OUTLETS),
             "total_pendapatan": total_pendapatan + 15700000, # Add base mock value
             "stok_gudang": total_stock,
             "outlet_kritis": outlet_status_counts["CRITICAL"],
-            "potensi_waste": "5.2%"
+            "potensi_waste": f"{dynamic_waste:.1f}%"
         },
-        "inventory": inventory_list
+        "inventory": inventory_list,
+        "requests_count": len(requests_log)
     }
 
 # --- Routes ---
@@ -179,6 +208,10 @@ def handle_distribusi():
                 "outlet": get_outlet_name(outlet_id),
                 "items_count": len(items_to_add)
             })
+            
+            # Update timestamp
+            last_updates[outlet_id] = datetime.now()
+            
             return jsonify({"message": "Stok berhasil ditambahkan"}), 201
         return jsonify({"error": "Outlet not found"}), 404
 
@@ -219,7 +252,26 @@ def pos_transaksi():
     }
     transactions.append(transaction_record)
     
+    # Update timestamp
+    last_updates[outlet_id] = datetime.now()
+    
     return jsonify({"message": "Transaksi berhasil", "new_stock": inventory[outlet_id]}), 200
+
+@app.route('/api/requests', methods=['GET', 'POST'])
+def handle_requests():
+    if request.method == 'POST':
+        data = request.json
+        # Expected: { outlet_id: "outlet_1", requests: [...], note: "..." }
+        requests_log.append({
+            "id": len(requests_log) + 1,
+            "date": datetime.now().isoformat(),
+            "outlet_id": data.get('outlet_id'),
+            "items": data.get('requests'),
+            "note": data.get('note'),
+            "status": "Pending"
+        })
+        return jsonify({"message": "Request received"}), 201
+    return jsonify(requests_log)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

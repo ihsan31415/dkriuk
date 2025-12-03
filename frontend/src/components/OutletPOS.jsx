@@ -168,22 +168,42 @@ const OutletPOS = () => {
             if (result.isConfirmed) {
                 const data = result.value;
                 
-                // Format pesan sukses (List item)
-                const listStr = data.requests.map(r => `<li><b>${r.qty}</b> ${r.item}</li>`).join('');
+                // Send request to backend
+                fetch('http://localhost:5000/api/requests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        outlet_id: OUTLET_ID,
+                        requests: data.requests,
+                        note: data.note
+                    })
+                })
+                .then(res => res.json())
+                .then(() => {
+                    // Format pesan sukses (List item)
+                    const listStr = data.requests.map(r => `<li><b>${r.qty}</b> ${r.item}</li>`).join('');
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Request Terkirim!',
-                    html: `
-                        <p class="mb-2 text-sm text-gray-600">Permintaan berikut telah dikirim ke Hub Pusat:</p>
-                        <ul class="text-left text-sm bg-gray-50 p-3 rounded-lg border border-gray-200 list-disc list-inside mb-2">
-                            ${listStr}
-                        </ul>
-                        ${data.note ? `<p class="text-xs text-gray-500 italic">"Catatan: ${data.note}"</p>` : ''}
-                    `,
-                    timer: 4000,
-                    showConfirmButton: true,
-                    confirmButtonColor: '#16a34a' // Green for OK
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Request Terkirim!',
+                        html: `
+                            <p class="mb-2 text-sm text-gray-600">Permintaan berikut telah dikirim ke Hub Pusat:</p>
+                            <ul class="text-left text-sm bg-gray-50 p-3 rounded-lg border border-gray-200 list-disc list-inside mb-2">
+                                ${listStr}
+                            </ul>
+                            ${data.note ? `<p class="text-xs text-gray-500 italic">"Catatan: ${data.note}"</p>` : ''}
+                        `,
+                        timer: 4000,
+                        showConfirmButton: true,
+                        confirmButtonColor: '#16a34a' // Green for OK
+                    });
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Mengirim',
+                        text: 'Terjadi kesalahan saat mengirim request.',
+                    });
                 });
             }
         });
