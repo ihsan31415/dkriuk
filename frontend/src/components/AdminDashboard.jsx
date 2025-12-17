@@ -12,13 +12,15 @@ const AdminDashboard = () => {
         fetch('http://localhost:5000/api/dashboard')
             .then(response => response.json())
             .then(data => {
-                setStats(data.stats);
-                setInventory(data.inventory);
-                setRequestsCount(data.requests_count || 0);
+                setStats(data?.stats || { total_outlet: 0, total_pendapatan: 0, stok_gudang: 0, outlet_kritis: 0, potensi_waste: '0%', potensi_waste_pcs: 0 });
+                setInventory(Array.isArray(data?.inventory) ? data.inventory : []);
+                setRequestsCount(data?.requests_count || 0);
                 setLoading(false);
             })
             .catch(error => {
                 console.error('Error fetching dashboard data:', error);
+                setStats({ total_outlet: 0, total_pendapatan: 0, stok_gudang: 0, outlet_kritis: 0, potensi_waste: '0%', potensi_waste_pcs: 0 });
+                setInventory([]);
                 setLoading(false);
             });
     };
@@ -69,6 +71,14 @@ const AdminDashboard = () => {
 
     if (loading && !stats) return <div className="p-8 flex justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
 
+    const safeStats = stats || { total_outlet: 0, total_pendapatan: 0, stok_gudang: 0, outlet_kritis: 0, potensi_waste: '0%', potensi_waste_pcs: 0 };
+    const wastePercent = parseFloat(String(safeStats.potensi_waste || '0').replace('%', '')) || 0;
+    const wasteBadgeClass = wastePercent >= 60
+        ? 'bg-red-100 text-red-700 border-red-200'
+        : wastePercent >= 30
+            ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
+            : 'bg-green-100 text-green-700 border-green-200';
+
     return (
         <>
             <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-200 sticky top-0 z-30">
@@ -112,7 +122,7 @@ const AdminDashboard = () => {
                             <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">+12% vs Kemarin</span>
                         </div>
                         <p className="text-gray-500 text-sm font-medium">Stok Ayam (Hub Pusat)</p>
-                        <h3 className="text-3xl font-bold text-gray-900 mt-1">{stats.stok_gudang} <span className="text-lg text-gray-400 font-normal">pcs</span></h3>
+                        <h3 className="text-3xl font-bold text-gray-900 mt-1">{safeStats.stok_gudang} <span className="text-lg text-gray-400 font-normal">pcs</span></h3>
                     </div>
 
                     <div className="animate-fade-in-up delay-100 p-6 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
@@ -122,7 +132,7 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                         <p className="text-gray-500 text-sm font-medium">Total Omzet Hari Ini</p>
-                        <h3 className="text-3xl font-bold text-gray-900 mt-1">Rp {(stats.total_pendapatan / 1000000).toFixed(1)} Jt</h3>
+                        <h3 className="text-3xl font-bold text-gray-900 mt-1">Rp {((safeStats.total_pendapatan || 0) / 1000000).toFixed(1)} Jt</h3>
                     </div>
 
                     <div className="animate-fade-in-up delay-200 p-6 bg-white rounded-xl border border-red-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
@@ -133,7 +143,7 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                         <p className="text-gray-500 text-sm font-medium">Outlet Stok Kritis</p>
-                        <h3 className="text-3xl font-bold text-red-600 mt-1">{stats.outlet_kritis} <span className="text-lg text-gray-400 font-normal">Outlet</span></h3>
+                        <h3 className="text-3xl font-bold text-red-600 mt-1">{safeStats.outlet_kritis} <span className="text-lg text-gray-400 font-normal">Outlet</span></h3>
                         <p className="text-xs text-red-500 mt-2 font-medium">Butuh pengiriman segera!</p>
                     </div>
 
@@ -142,9 +152,12 @@ const AdminDashboard = () => {
                             <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600">
                                 <span className="material-symbols-outlined">delete_forever</span>
                             </div>
+                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${wasteBadgeClass}`}>
+                                {wastePercent >= 60 ? 'HIGH' : wastePercent >= 30 ? 'MEDIUM' : 'LOW'}
+                            </span>
                         </div>
                         <p className="text-gray-500 text-sm font-medium">Potensi Waste (Sisa)</p>
-                        <h3 className="text-3xl font-bold text-gray-900 mt-1">{stats.potensi_waste}</h3>
+                        <h3 className="text-3xl font-bold text-gray-900 mt-1">{safeStats.potensi_waste}</h3>
                     </div>
                 </div>
 

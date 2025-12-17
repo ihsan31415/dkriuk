@@ -7,16 +7,24 @@ const AdminDistribusi = () => {
     const [outlet, setOutlet] = useState('');
     const [items, setItems] = useState({
         paha_atas: 0,
+        paha_bawah: 0,
         dada: 0,
         sayap: 0
     });
     const [history, setHistory] = useState([]);
+    const [outletStatuses, setOutletStatuses] = useState([]);
 
     React.useEffect(() => {
-        fetch('http://localhost:5000/api/distribusi')
-            .then(res => res.json())
-            .then(data => setHistory(data))
-            .catch(err => console.error(err));
+        // Load distribusi history and live outlet statuses for correct notation (Kritis/Aman/Berlebih)
+        Promise.all([
+            fetch('http://localhost:5000/api/distribusi').then(res => res.json()),
+            fetch('http://localhost:5000/api/dashboard').then(res => res.json())
+        ])
+        .then(([histories, dashboard]) => {
+            setHistory(histories);
+            setOutletStatuses(dashboard.inventory || []);
+        })
+        .catch(err => console.error(err));
     }, []);
 
     const handleInputChange = (e) => {
@@ -57,11 +65,11 @@ const AdminDistribusi = () => {
                 Swal.showLoading()
             }
         }).then(() => {
-            // Map UI items to Backend IDs
-            // 1: Dada, 2: Paha Atas, 3: Sayap
+            // Map UI items to Backend IDs (1: Dada, 2: Paha Atas, 3: Sayap, 4: Paha Bawah)
             const itemsPayload = [];
             if (items.dada > 0) itemsPayload.push({ id: 1, qty: items.dada });
             if (items.paha_atas > 0) itemsPayload.push({ id: 2, qty: items.paha_atas });
+            if (items.paha_bawah > 0) itemsPayload.push({ id: 4, qty: items.paha_bawah });
             if (items.sayap > 0) itemsPayload.push({ id: 3, qty: items.sayap });
 
             // Send data to backend
@@ -133,10 +141,16 @@ const AdminDistribusi = () => {
                                     className="form-select w-full rounded-lg border-gray-300 focus:border-primary focus:ring-primary h-12"
                                 >
                                     <option disabled value="">-- Pilih Outlet --</option>
-                                    <option value="outlet_1">Cabang UNNES Sekaran (Kritis)</option>
-                                    <option value="outlet_2">Cabang Banaran</option>
-                                    <option value="outlet_3">Cabang Patemon</option>
-                                    <option value="outlet_4">Cabang Sampangan</option>
+                                    {(outletStatuses.length > 0 ? outletStatuses : [
+                                        { id: 'outlet_1', outlet: 'Cabang UNNES Sekaran', status: 'KRITIS' },
+                                        { id: 'outlet_2', outlet: 'Cabang Banaran', status: 'BERLEBIH' },
+                                        { id: 'outlet_3', outlet: 'Cabang Patemon', status: 'AMAN' },
+                                        { id: 'outlet_4', outlet: 'Cabang Sampangan', status: 'KRITIS' },
+                                    ]).map((o) => (
+                                        <option key={o.id} value={o.id}>
+                                            {`${o.outlet} (${o.status})`}
+                                        </option>
+                                    ))}
                                 </select>
                             </label>
                         </div>
@@ -159,6 +173,21 @@ const AdminDistribusi = () => {
                                 <input 
                                     name="paha_atas"
                                     value={items.paha_atas}
+                                    onChange={handleInputChange}
+                                    className="qty-input form-input w-24 rounded-md border-gray-300 text-center text-lg font-bold focus:border-primary focus:ring-primary" 
+                                    min="0" 
+                                    type="number" 
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-gray-50 border border-gray-100 hover:border-orange-200 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-primary font-bold">PB</div>
+                                    <span className="text-gray-800 font-medium">Ayam Paha Bawah</span>
+                                </div>
+                                <input 
+                                    name="paha_bawah"
+                                    value={items.paha_bawah}
                                     onChange={handleInputChange}
                                     className="qty-input form-input w-24 rounded-md border-gray-300 text-center text-lg font-bold focus:border-primary focus:ring-primary" 
                                     min="0" 
@@ -239,7 +268,7 @@ const AdminDistribusi = () => {
                                             <tr key={idx} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4">{new Date(log.date).toLocaleString()}</td>
                                                 <td className="px-6 py-4 font-medium text-gray-900">{log.outlet}</td>
-                                                <td className="px-6 py-4 text-right font-bold">{log.items_count}</td>
+                                                <td className="px-6 py-4 text-right font-bold">{log.total_qty || log.items_count}</td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Sukses</span>
                                                 </td>

@@ -6,10 +6,18 @@ const OutletPOS = () => {
     const [cart, setCart] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [loading, setLoading] = useState(true);
-    const OUTLET_ID = "outlet_1"; // Hardcoded for this demo
+    const [outletId, setOutletId] = useState('outlet_1');
+
+    const OUTLETS = [
+        { id: 'outlet_1', name: 'UNNES Sekaran' },
+        { id: 'outlet_2', name: 'Banaran' },
+        { id: 'outlet_3', name: 'Patemon' },
+        { id: 'outlet_4', name: 'Sampangan' }
+    ];
 
     React.useEffect(() => {
-        fetch(`http://localhost:5000/api/products?outlet_id=${OUTLET_ID}`)
+        setLoading(true);
+        fetch(`http://localhost:5000/api/products?outlet_id=${outletId}`)
             .then(res => res.json())
             .then(data => {
                 setMenuItems(data);
@@ -19,7 +27,9 @@ const OutletPOS = () => {
                 console.error("Error fetching menu:", err);
                 setLoading(false);
             });
-    }, []);
+    }, [outletId]);
+
+    const outletName = (OUTLETS.find((o) => o.id === outletId) || {}).name || 'Outlet';
 
     const addToCart = (item) => {
         if (item.stock <= 0) {
@@ -76,7 +86,7 @@ const OutletPOS = () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        outlet_id: OUTLET_ID,
+                        outlet_id: outletId,
                         items: cart, 
                         total: total, 
                         date: new Date().toISOString() 
@@ -90,7 +100,7 @@ const OutletPOS = () => {
                     Swal.fire({ title: 'Pembayaran Berhasil!', text: 'Struk telah dicetak. Terima kasih.', icon: 'success', timer: 2000, showConfirmButton: false });
                     setCart([]);
                     // Refresh menu to update stock
-                    fetch(`http://localhost:5000/api/products?outlet_id=${OUTLET_ID}`)
+                    fetch(`http://localhost:5000/api/products?outlet_id=${outletId}`)
                         .then(res => res.json())
                         .then(data => setMenuItems(data));
                 })
@@ -173,7 +183,7 @@ const OutletPOS = () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        outlet_id: OUTLET_ID,
+                        outlet_id: outletId,
                         requests: data.requests,
                         note: data.note
                     })
@@ -217,8 +227,19 @@ const OutletPOS = () => {
                         <div className="bg-orange-100 p-2 rounded-lg text-primary">
                             <span className="material-symbols-outlined">storefront</span>
                         </div>
-                        <div>
-                            <h2 className="text-lg font-bold leading-tight">Outlet: UNNES Sekaran</h2>
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-lg font-bold leading-tight">Outlet:</h2>
+                                <select
+                                    value={outletId}
+                                    onChange={(e) => { setOutletId(e.target.value); setCart([]); }}
+                                    className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:border-primary focus:ring-primary"
+                                >
+                                    {OUTLETS.map((o) => (
+                                        <option key={o.id} value={o.id}>{o.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                             <p className="text-xs text-gray-500">Kasir: Staff Pagi</p>
                         </div>
                     </div>
@@ -267,7 +288,7 @@ const OutletPOS = () => {
                 <div className="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <span className="material-symbols-outlined">shopping_cart</span>
-                        Pesanan
+                        Pesanan ({outletName})
                     </h2>
                     <span className="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">{totalQty} Item</span>
                 </div>

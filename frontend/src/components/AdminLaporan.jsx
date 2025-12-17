@@ -26,6 +26,12 @@ const AdminLaporan = () => {
     const [filteredLaporan, setFilteredLaporan] = useState([]);
     const [filterOutlet, setFilterOutlet] = useState('all');
     const [filterTime, setFilterTime] = useState('7 Hari Terakhir');
+    const [summary, setSummary] = useState({
+        totalOmzet: 0,
+        totalTransaksi: 0,
+        topOutlet: '-',
+        topContribution: 0
+    });
 
     useEffect(() => {
         fetch('http://localhost:5000/api/laporan')
@@ -33,9 +39,32 @@ const AdminLaporan = () => {
             .then(data => {
                 setLaporan(data);
                 setFilteredLaporan(data);
+                setSummary(computeSummary(data));
             })
             .catch(err => console.error(err));
     }, []);
+
+    const formatRupiah = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value || 0);
+
+    const computeSummary = (data) => {
+        if (!data || data.length === 0) {
+            return { totalOmzet: 0, totalTransaksi: 0, topOutlet: '-', topContribution: 0 };
+        }
+
+        const totalOmzet = data.reduce((sum, item) => sum + (item.omzet || 0), 0);
+        const totalTransaksi = data.reduce((sum, item) => sum + (item.transaksi || 0), 0);
+
+        const omzetByOutlet = data.reduce((acc, item) => {
+            acc[item.outlet] = (acc[item.outlet] || 0) + (item.omzet || 0);
+            return acc;
+        }, {});
+
+        const topEntry = Object.entries(omzetByOutlet).sort((a, b) => b[1] - a[1])[0];
+        const topOutlet = topEntry ? topEntry[0] : '-';
+        const topContribution = topEntry && totalOmzet > 0 ? Math.round((topEntry[1] / totalOmzet) * 100) : 0;
+
+        return { totalOmzet, totalTransaksi, topOutlet, topContribution };
+    };
 
     const handleFilter = () => {
         let result = laporan;
@@ -56,6 +85,7 @@ const AdminLaporan = () => {
         }
         
         setFilteredLaporan(result);
+        setSummary(computeSummary(result));
     };
 
     const handleExport = () => {
@@ -74,15 +104,9 @@ const AdminLaporan = () => {
         labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
         datasets: [
             {
-                label: 'Sekaran',
+                label: 'Omzet (mock mingguan)',
                 data: [2500000, 2800000, 2600000, 3000000, 3500000, 4200000, 3800000],
                 backgroundColor: '#eb6f0a',
-                borderRadius: 4
-            },
-            {
-                label: 'Banaran',
-                data: [1800000, 1900000, 1850000, 2100000, 2400000, 2800000, 2600000],
-                backgroundColor: '#fcd34d',
                 borderRadius: 4
             }
         ]
@@ -159,9 +183,9 @@ const AdminLaporan = () => {
                                 <span className="material-symbols-outlined">payments</span>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500 font-medium">Total Omzet (7 Hari)</p>
-                                <h3 className="text-2xl font-bold text-gray-900">Rp 45.200.000</h3>
-                                <span className="text-xs text-green-600 font-bold">▲ 8.2% vs minggu lalu</span>
+                                <p className="text-sm text-gray-500 font-medium">Total Omzet ({filterTime})</p>
+                                <h3 className="text-2xl font-bold text-gray-900">{formatRupiah(summary.totalOmzet)}</h3>
+                                <span className="text-xs text-green-600 font-bold">▲ Live dari filter</span>
                             </div>
                         </div>
                     </div>
@@ -172,8 +196,8 @@ const AdminLaporan = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 font-medium">Total Transaksi</p>
-                                <h3 className="text-2xl font-bold text-gray-900">1,845</h3>
-                                <span className="text-xs text-green-600 font-bold">▲ 120 Transaksi baru</span>
+                                <h3 className="text-2xl font-bold text-gray-900">{summary.totalTransaksi.toLocaleString('id-ID')}</h3>
+                                <span className="text-xs text-green-600 font-bold">▲ Live dari filter</span>
                             </div>
                         </div>
                     </div>
@@ -184,8 +208,8 @@ const AdminLaporan = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 font-medium">Top Performa Outlet</p>
-                                <h3 className="text-lg font-bold text-gray-900">Cabang UNNES Sekaran</h3>
-                                <span className="text-xs text-gray-500">Kontribusi 42% dari total omzet</span>
+                                <h3 className="text-lg font-bold text-gray-900">{summary.topOutlet}</h3>
+                                <span className="text-xs text-gray-500">Kontribusi {summary.topContribution}% dari total omzet</span>
                             </div>
                         </div>
                     </div>
